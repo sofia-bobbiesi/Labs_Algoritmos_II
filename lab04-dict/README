@@ -8,8 +8,17 @@ $ gcc -Wall -Werror -Wextra -pedantic -g -std=c99 -o main.e *helpers.c string.c 
 To start the program, run in terminal:
 $ ./main.e 
 
+- - - Can also use Makefile - - -
+
+To compile the program, you have to acces the file directory and run: 
+$ make
+
+To start the program, run in terminal:
+$ ./dict
 
 
+To clean the compiles after testing the program:
+$ make clean
 
 
 
