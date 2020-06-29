@@ -3,7 +3,6 @@ CC = gcc
 TARGET = dict
 OBJS = $(SRCS:.c=.o)
 SRCS = string.c helpers.c main.c dict_helpers.c dict.c 
-INPUTDIR = input/
 
 all: 	$(OBJS) 
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) 
