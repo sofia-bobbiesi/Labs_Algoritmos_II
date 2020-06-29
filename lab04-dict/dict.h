@@ -5,11 +5,10 @@
 #include <stdbool.h>
 #include "key_value.h"
 
-typedef struct _node_t *node_t;
+typedef struct _node_t *dict_t;
 /* dict is a pointer to a structure.
  * Note: The definition of the structure should be in [dict.c], not here.
  */
-typedef struct _dict_t *dict_t;
 
 dict_t dict_empty();
 /* Creates an empty dictionary
@@ -56,7 +55,7 @@ bool dict_exists(dict_t dict, key_t word);
  * POS: {dict --> dict}
  */
 
-size_t dict_length(dict_t dict);
+unsigned int dict_length(dict_t dict);
 /* Returns the number of words contained in the dictionary.
  * Complexity O(1)
  *

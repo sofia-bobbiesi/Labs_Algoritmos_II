@@ -9,58 +9,59 @@ struct _node_t {
     dict_t right;
     key_t key;
     value_t value;
-};
-
-struct _dict_t{
-   size_t length;
-   struct _node_t *root;
+    unsigned int length;
 };
 
 dict_t dict_empty() {
         /* Initializing of dict */
-        dict_t dict = malloc(sizeof(struct _dict_t));
-        dict->length = 0;
-        dict->root=NULL;
+        dict_t dict = NULL;
         return dict;
 }
 
-static dict_t dict_create_node(dict_t dict, key_t word, value_t def){
+static dict_t dict_create_node(key_t word, value_t def){
         /* We assing memory if the dict is empty or if
         we are in a new node */
-        node_t root = malloc(sizeof(struct _node_t));
+        dict_t dict = (dict_t)malloc(sizeof(struct _node_t));
         /* Just point to the input values */
-        dict->root->key=word;
-        dict->root->value=def;
+        dict->key=word;
+        dict->value=def;
+        /* Initializing of length */
+        dict->length = 1;
         /* Initialize the corresponding sub trees */
-        dict->root->left=dict_empty(); 
-        dict->root->right=dict_empty();
+        dict->left=dict_empty(); 
+        dict->right=dict_empty();
     return dict;
 }
 
 dict_t dict_add(dict_t dict, key_t word, value_t def) {
-    assert(word != NULL && def != NULL && dict!=NULL);
-    if(dict->root==NULL){
-        dict = dict_create_node(dict,word,def);
+    assert(word != NULL && def != NULL);
+    bool duplicate = dict_exists(dict,word);
+    if(dict==NULL){
+        dict = dict_create_node(word,def);
     }
     else {
-        if(key_less(dict->root->key,word)){
+        if(key_less(dict->key,word)){
             /* If the key entered is greater than the current
             one, then it is to the right */
-            dict->length++; 
-            dict->root->right = dict_add(dict->root->right,word,def);
+            if (!duplicate){
+               dict->length++;
+            }
+            dict->right = dict_add(dict->right,word,def);
         }
-        else if(key_less(word,dict->root->key)){
+        else if(key_less(word,dict->key)){
             /* If the key entered is less than the current
             one, then it is to the left */
-            dict->length++;
-            dict->root->left = dict_add(dict->root->left,word,def);
+            if (!duplicate){
+               dict->length++;
+            }
+            dict->left = dict_add(dict->left,word,def);
         }   
         else{ 
             /* if the key entered is not minor, is not greater
             and is not null, then it is equal. In this case,
             we only redefine the value */
-            dict->root->value = value_destroy(dict->root->value);
-            dict->root->value=def;
+            dict->value = value_destroy(dict->value);
+            dict->value=def;
         }
     }
     assert(value_eq(def, dict_search(dict, word)));
@@ -73,15 +74,15 @@ value_t dict_search(dict_t dict, key_t word) {
    
     if (dict !=NULL ){ 
         /* Same logical estructure as dict_add */
-        if (key_eq(dict->root->key,word)){
-            def = dict->root->value;
+        if (key_eq(dict->key,word)){
+            def = dict->value;
         }
-        else if (key_less(word,dict->root->key)){
-            def = dict_search(dict->root->left,word);
+        else if (key_less(word,dict->key)){
+            def = dict_search(dict->left,word);
         } 
         else {
             /* if it is not minor and is not equal, then it is greater */
-            def = dict_search(dict->root->right,word);
+            def = dict_search(dict->right,word);
             }
         } 
     return def;
@@ -92,13 +93,25 @@ bool dict_exists(dict_t dict, key_t word) {
     bool exists = false;
     if (dict != NULL){
         /* At least one should be true. So... */
-        exists = key_eq(dict->root->key,word) || dict_exists(dict->root->left,word) || dict_exists(dict->root->right,word);
+        exists = key_eq(dict->key,word) || dict_exists(dict->left,word) || dict_exists(dict->right,word);
     }
     return exists;
 }
-
-size_t dict_length(dict_t dict){
-    return dict->length;
+/* Returns the length by recursive methode
+unsigned int dict_length(dict_t dict){
+    unsigned int length = 0u;
+    if (dict !=NULL){
+        length = dict_length(dict->left) + 1 + dict_length(dict->right); 
+    }
+    return length;
+}
+*/
+unsigned int dict_length(dict_t dict){
+    unsigned int length = 0u;
+    if (dict!=NULL){
+        length = dict->length;
+    }
+    return length;
 }
 /* Recursive method to finde the minimum node:  
  * PRE: {dict -> dict}
@@ -109,14 +122,14 @@ size_t dict_length(dict_t dict){
 static dict_t dict_min_node(dict_t dict){
     dict_t min = NULL;
     /* Just keep moving left until we arrive at the min */
-    if(dict->root->left!=NULL){
-        min = dict_min_node(dict->root->left);
+    if(dict->left!=NULL){
+        min = dict_min_node(dict->left);
     }
     else{
         min = (dict_t)malloc(sizeof(struct _node_t));
         /* I couldn’t solve this without using clone, sorry */
-        min->root->key = key_clone(dict->root->key);
-        min->root->value = value_clone(dict->root->value); 
+        min->key = key_clone(dict->key);
+        min->value = value_clone(dict->value); 
     }
     return min;
 } 
@@ -125,53 +138,53 @@ dict_t dict_remove(dict_t dict, key_t word) {
     assert(word != NULL);
     /* Same logical estructure as dict_add */
     if(dict!=NULL){
-        if (key_less(word,dict->root->key)){ 
-            dict->root->left = dict_remove(dict->root->left,word);
+        if (key_less(word,dict->key)){ 
+            dict->left = dict_remove(dict->left,word);
             dict->length--;
         } 
-        else if(key_less(dict->root->key,word)){
-            dict->root->right = dict_remove(dict->root->right,word); 
+        else if(key_less(dict->key,word)){
+            dict->right = dict_remove(dict->right,word); 
             dict->length--;
         } 
         else {
             /* Case 1: No children */
-            if ((dict->root->left==NULL)&&(dict->root->right==NULL)){
-                dict->root->key = key_destroy(dict->root->key);
-                dict->root->value = value_destroy(dict->root->value);
+            if ((dict->left==NULL)&&(dict->right==NULL)){
+                dict->key = key_destroy(dict->key);
+                dict->value = value_destroy(dict->value);
                 free(dict);
                 dict = NULL;
             }
             /* Case 2: One right child */
-            else if (dict->root->left==NULL){
+            else if (dict->left==NULL){
                 dict_t daux = dict;
                 /* Reconnect the dict and remove the node */
-                dict = dict->root->right;
-                daux->root->key = key_destroy(daux->root->key);
-                daux->root->value = value_destroy(daux->root->value);
+                dict = dict->right;
+                daux->key = key_destroy(daux->key);
+                daux->value = value_destroy(daux->value);
                 free(daux);
                 
             } 
             /* Case 3: One left child */
-            else if(dict->root->right==NULL){
+            else if(dict->right==NULL){
                 dict_t daux = dict;
                 /* Reconnect the dict and remove the node */
-                dict = dict->root->left;
-                daux->root->key = key_destroy(daux->root->key);
-                daux->root->value = value_destroy(daux->root->value);
+                dict = dict->left;
+                daux->key = key_destroy(daux->key);
+                daux->value = value_destroy(daux->value);
                 free(daux);
             }
             /* Cse 4: Two childrens */
             else {
                 /* Find a new root that will be the least right node */
-                dict_t daux = dict_min_node(dict->root->right);
+                dict_t daux = dict_min_node(dict->right);
                 /* Destroy and reset the node values to avoid dangling pointers*/
-                dict->root->key = key_destroy(dict->root->key);
-                dict->root->value = value_destroy(dict->root->value);
-                dict->root->key = daux->root->key;
-                dict->root->value = daux->root->value;
+                dict->key = key_destroy(dict->key);
+                dict->value = value_destroy(dict->value);
+                dict->key = daux->key;
+                dict->value = daux->value;
                 /* Remove the branch with the value [key,def] of the
                 node as it will now be the new root */
-                dict->root->right = dict_remove(dict->root->right,daux->root->key);
+                dict->right = dict_remove(dict->right,daux->key);
                 dict->length--;
                 free(daux); 
             }
@@ -183,10 +196,10 @@ dict_t dict_remove(dict_t dict, key_t word) {
 dict_t dict_remove_all(dict_t dict) {
     if (dict !=NULL){
         /* Just remove those all nodes */
-        dict->root->key = key_destroy(dict->root->key);
-        dict->root->value = value_destroy(dict->root->value);
-        dict->root->left = dict_remove_all(dict->root->left);
-        dict->root->right = dict_remove_all(dict->root->right);
+        dict->key = key_destroy(dict->key);
+        dict->value = value_destroy(dict->value);
+        dict->left = dict_remove_all(dict->left);
+        dict->right = dict_remove_all(dict->right);
         free(dict);
         dict = NULL;
     }  
@@ -198,33 +211,34 @@ void dict_dump(dict_t dict, FILE *file) {
     if (dict != NULL && file != stdout) {
         /* Print PreOrder: The first element is the root,
         then print the left branch and then the right branch. */
-        key_dump(dict->root->key, file);
+        key_dump(dict->key, file);
         fprintf(file, ": ");
-        value_dump(dict->root->value, file);
+        value_dump(dict->value, file);
         fprintf(file, "\n");
-        dict_dump(dict->root->left, file);
-        dict_dump(dict->root->right, file);
+        dict_dump(dict->left, file);
+        dict_dump(dict->right, file);
     } 
     else if (dict != NULL && file == stdout){
         /* Print InOrder: The root is located in the middle,
         the elements on the left subtree are above and the
         elements on the right subtree, below. */
-        dict_dump(dict->root->left, file);
-        key_dump(dict->root->key, file);
+        dict_dump(dict->left, file);
+        key_dump(dict->key, file);
         fprintf(file, ": ");
-        value_dump(dict->root->value, file);
+        value_dump(dict->value, file);
         fprintf(file, "\n");
-        dict_dump(dict->root->right, file);     
+        dict_dump(dict->right, file);
+        
     }
 }
 
 dict_t dict_destroy(dict_t dict) {
-    if (dict->root !=NULL){
+    if (dict !=NULL){
         /* Just destroy those all memory */
-        dict->root->key = key_destroy(dict->root->key);
-        dict->root->value = value_destroy(dict->root->value);
-        dict->root->left=dict_destroy(dict->root->left);
-        dict->root->right=dict_destroy(dict->root->right);
+        dict->key = key_destroy(dict->key);
+        dict->value = value_destroy(dict->value);
+        dict->left=dict_destroy(dict->left);
+        dict->right=dict_destroy(dict->right);
         free(dict);
     } 
     return NULL;
