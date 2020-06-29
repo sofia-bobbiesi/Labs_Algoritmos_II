@@ -33,7 +33,7 @@ queue queue_enqueue(queue q, elem_t elem){
     }
     else{
         q->rear->next = q_tmp;
-        q->rear = q_tmp; //reasignar cual es el ultimo ahora
+        q->rear = q_tmp; //reassign which is the last now
     }
     q->length++;
     return q;
@@ -42,7 +42,7 @@ queue queue_enqueue(queue q, elem_t elem){
 /* OPERATIONES */
 
 size_t queue_size(queue q){
-    return q->length; //???
+    return q->length;
 }
 
 bool queue_is_empty(queue q){
