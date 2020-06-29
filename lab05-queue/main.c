@@ -31,6 +31,7 @@ char print_menu(void) {
            "\nPlease enter your choice: ");
 
     scanf(" %c",&option);
+    while ((getchar()) != '\n');
     return option;
 }
 
