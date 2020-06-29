@@ -1,6 +1,6 @@
 { - Dijkstra ~ Lab made by Sofia Bobbiesi Bender - }
 
-- - -  Compiling & Executing Instructions  - - -
+- - - Compiling & Executing Instructions  - - -
 
 To compile the program, you have to acces the file directory and run: 
 $ make
