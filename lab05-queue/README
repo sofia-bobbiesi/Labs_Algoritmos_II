@@ -12,5 +12,4 @@ To clean the compiles after testing the program:
 $ make clean
 
 To use valgrind run in terminal:
-$make
 $make valgrind
