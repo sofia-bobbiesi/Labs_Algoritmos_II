@@ -15,5 +15,5 @@ all: 	$(OBJS)
 clean:
 	$(RM) $(OBJS) *~ $(TARGET)
 
-valgrind: 
+valgrind: all
 	valgrind --show-reachable=yes --leak-check=full ./$(TARGET)
